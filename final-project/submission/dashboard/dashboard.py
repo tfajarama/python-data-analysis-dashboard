@@ -526,7 +526,6 @@ def visualize_seller_rating(rating_summary_df):
             startangle=140)
 
     plt.axis('equal')
-    plt.title('Distribution of Seller Ratings')
     st.pyplot(fig)
 
 
@@ -609,7 +608,6 @@ def visualize_payment_preferences(payment_preferences_df):
             startangle=140)
 
     plt.axis('equal')
-    plt.title('Customers Payment Type Preference')
     st.pyplot(fig)
 
 
@@ -715,7 +713,6 @@ def visualize_customer_clusters(new_rfm_df):
     plt.figure(figsize=(10, 6))
     sns.barplot(x=category_counts.index, y=category_counts.values,
                 palette=sns.color_palette("pastel", n_colors=len(category_counts)), hue=category_counts.values)
-    plt.title("Customer Segmentation by Frequency and Average Monetary", fontsize=16)
     plt.xlabel("Cluster Category", fontsize=12)
     plt.ylabel("Count", fontsize=12)
     plt.xticks(rotation=45, ha="right", fontsize=10)
@@ -785,7 +782,8 @@ col1, col2 = st.columns(2)
 
 with col1:
     total_successful_orders = daily_orders_df['successful_order_count'].sum()
-    st.metric("Total Successful Orders", value=total_successful_orders)
+    successful_orders_percentage = round(((total_successful_orders * 100) / daily_orders_df['order_count'].sum()), 2)
+    st.metric("Total Successful Orders", value=f"{total_successful_orders} ({successful_orders_percentage}%)")
 
 with col2:
     total_revenue_gain = format_currency(daily_orders_df['revenue_gain'].sum(), "BRL", locale='es_CO')
@@ -795,7 +793,8 @@ col1, col2 = st.columns(2)
 
 with col1:
     total_failed_orders = daily_orders_df['failed_order_count'].sum()
-    st.metric("Total Failed Orders", value=total_failed_orders)
+    failed_orders_percentage = round(((total_failed_orders * 100) / daily_orders_df['order_count'].sum()), 2)
+    st.metric("Total Failed Orders", value=f"{total_failed_orders} ({failed_orders_percentage}%)")
 
 with col2:
     total_revenue_loss = format_currency(daily_orders_df['revenue_loss'].sum(), "BRL", locale='es_CO')
@@ -814,6 +813,24 @@ st.header("Logistics Performance")
 
 # PB3: Bagaimana ketepatan waktu delivery kurir dengan waktu estimasinya?
 st.subheader("Carrier Delivery Performance")
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    deliv_before_time = delivery_summary_df.loc[delivery_summary_df['delivery_estimation_diff'] < 0]['order_id'].nunique()
+    deliv_before_time_percentage = round(((deliv_before_time * 100) / delivery_summary_df.shape[0]), 2)
+    st.metric("Deliveries Before Estimated", value=f"{deliv_before_time} ({deliv_before_time_percentage}%)")
+
+with col2:
+    deliv_on_time = delivery_summary_df.loc[delivery_summary_df['delivery_estimation_diff'] == 0]['order_id'].nunique()
+    deliv_on_time_percentage = round(((deliv_on_time * 100) / delivery_summary_df.shape[0]), 2)
+    st.metric("Deliveries On Estimated", value=f"{deliv_on_time} ({deliv_on_time_percentage}%)")
+
+with col3:
+    deliv_after_time = delivery_summary_df.loc[delivery_summary_df['delivery_estimation_diff'] > 0]['order_id'].nunique()
+    deliv_after_time_percentage = round(((deliv_after_time * 100) / delivery_summary_df.shape[0]), 2)
+    st.metric("Deliveries After Estimated", value=f"{deliv_after_time} ({deliv_after_time_percentage}%)")
+
 visualize_delivery_performance(delivery_summary_df)
 
 # PB4: Bagaimana ketepatan waktu shipping penjual dengan batas waktunya?
